@@ -1,32 +1,39 @@
 const Promise = (()=>{
+    // promise 的三种状态
+    const PENDING = 'pending',
+          FULFILLED = 'fulfilled',
+          REJECTED = 'rejected';
+
     const Promise = function (_executor) {
         this.status = 'pending'; // 初始状态
         this.data = void 0; // 初始值
         this.callbacks = []; // resolve reject 回调函数集合
 
-        // 成功回调 resolve 函数
+        // 成功回调执行函数
         const _resolve = (_value) => {
-            if (this.status === 'pending') {
-                this.status = 'fulfilled';
-                this.data = _value;
+            // 如果当前状态不是 pending 说明状态已经确定，不能再次改变
+            if (this.status !== PENDING) return;
 
-                // 触发集合中的 resolve 函数
-                for(let i = 0, l = this.callbacks.length; i < l; i++) {
-                    this.callbacks[i].onResolved(_value);
-                }
+            this.status = FULFILLED;
+            this.data = _value;
+
+            // 触发集合中的 onResolved 函数
+            for(let i = 0, l = this.callbacks.length; i < l; i++) {
+                this.callbacks[i].onResolved(_value);
             }
         };
 
-        // 失败回调 reject 函数
+        // 失败回调执行函数
         const _reject = (_reason) => {
-            if (this.status === 'pending') {
-                this.status = 'rejected';
-                this.data = _reason;
+            // 如果当前状态不是 pending 说明状态已经确定，不能再次改变
+            if (this.status !== PENDING) return;
 
-                // 触发集合中的 reject 函数
-                for(let i = 0, l = this.callbacks.length; i < l; i++) {
-                    this.callbacks[i].onRejected(_reason);
-                }
+            this.status = REJECTED;
+            this.data = _reason;
+
+            // 触发集合中的 onRejected 函数
+            for(let i = 0, l = this.callbacks.length; i < l; i++) {
+                this.callbacks[i].onRejected(_reason);
             }
         };
 
@@ -42,11 +49,11 @@ const Promise = (()=>{
         let _promise2;
 
         _onResolved = typeof _onResolved === 'function' ?
-                      _onResolved : function(_value) {};
+                      _onResolved : function(_value) {return _value};
         _onRejected = typeof _onRejected === 'function' ?
-                      _onRejected : function(_reason) {};
+                      _onRejected : function(_reason) {throw _reason};
 
-        if (this.status === 'fulfilled') {
+        if (this.status === FULFILLED) {
             return _promise2 = new Promise((_resolve, _reject) => {
                 try {
                     const _ret = _onResolved(this.data);
@@ -62,7 +69,7 @@ const Promise = (()=>{
             });
         }
 
-        if (this.status === 'rejected') {
+        if (this.status === REJECTED) {
             return _promise2 = new Promise((_resolve, _reject) => {
                 try {
                     const _ret = _onRejected(this.data);
@@ -78,11 +85,10 @@ const Promise = (()=>{
             });
         }
 
-        if (this.status === 'pending') {
+        if (this.status === PENDING) {
             return _promise2 = new Promise((_resolve, _reject) => {
-                // 如果当前状态 pending 状态，此时不能确定调用 onResolved 还是 onRejected
-                // 只能等到 Promise 的状态确定后，才能确实如何处理
-                // 所以我们需要把我们的处理逻辑做为 callback 放入 promise1 的回调函数集合里
+                // 如果当前状态是 pending，此时不能确定调用 onResolved 还是 onRejected
+                // 将处理逻辑做为 callback 放入 promise1 的回调函数集合里，当状态确定时触发对应的回调
                 this.callbacks.push({
                     onResolved (_value) {
                         try {
@@ -111,7 +117,7 @@ const Promise = (()=>{
                             return _reject(_e);
                         }
                     }
-                })
+                });
             });
         } 
     };
