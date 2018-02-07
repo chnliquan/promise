@@ -56,13 +56,9 @@ const Promise = (()=>{
         if (this.status === FULFILLED) {
             return _promise2 = new Promise((_resolve, _reject) => {
                 try {
-                    const _ret = _onResolved(this.data);
+                    const _x = _onResolved(this.data);
 
-                    if (_ret instanceof Promise) {
-                        _ret.then(_resolve, _reject);
-                    }else {
-                        _resolve(_ret);
-                    }
+                    _resolvePromise(_promise2, _x, _resolve, _reject);
                 }catch (_e) {
                     return _reject(_e);
                 }
@@ -72,13 +68,9 @@ const Promise = (()=>{
         if (this.status === REJECTED) {
             return _promise2 = new Promise((_resolve, _reject) => {
                 try {
-                    const _ret = _onRejected(this.data);
+                    const _x = _onRejected(this.data);
 
-                    if (_ret instanceof Promise) {
-                        _ret.then(_resolve, _reject);
-                    }else {
-                        _resolve(_ret);
-                    }
+                    _resolvePromise(_promise2, _x, _resolve, _reject);
                 }catch (_e) {
                     return _reject(_e);
                 }
@@ -92,13 +84,9 @@ const Promise = (()=>{
                 this.callbacks.push({
                     onResolved (_value) {
                         try {
-                            const _ret = _onResolved(_value);
+                            const _x = _onResolved(_value);
                             
-                            if (_ret instanceof Promise) {
-                                _ret.then(_resolve, _reject);
-                            }else {
-                                _resolve(_ret);
-                            }
+                            _resolvePromise(_promise2, _x, _resolve, _reject);
                         } catch (_e) {
                             return _reject(_e);
                         }
@@ -106,13 +94,9 @@ const Promise = (()=>{
 
                     onRejected (_reason) {
                         try {
-                            const _ret = _onRejected(_reason);
+                            const _x = _onRejected(_reason);
                             
-                            if (_ret instanceof Promise) {
-                                _ret.then(_resolve, _reject);
-                            }else {
-                                _resolve(_ret);
-                            }
+                            _resolvePromise(_promise2, _x, _resolve, _reject);
                         } catch (_e) {
                             return _reject(_e);
                         }
@@ -122,12 +106,74 @@ const Promise = (()=>{
         } 
     };
 
+    // 根据 promises/A+ 标准，执行 promise resolution procedure
+    const _resolvePromise = (_promise2, _x, _resolve, _reject) => {
+        let _hasBeenCalled = !1,
+            _then;
+
+        // 2.3.1 
+        if (_promise2 === _x) {
+            _reject(new TypeError('Chaining cycle detected for promise!'));
+        }
+
+        // 2.3.2 
+        if (_x instanceof Promise) {
+            if (_x.status === PENDING) { // 2.3.2.1
+                _x.then((_value) => {
+                    _resolvePromise(_promise2, _value, _resolve, _reject);
+                }, _reject);
+            }else { // 2.3.2.2 && 2.3.2.3
+                _x.then(_resolve, _reject); 
+            }
+
+            return;
+        }
+
+        // 2.3.3
+        if (_x !== null && (typeof _x === 'object' || typeof _x === 'function')) {
+            _then = _x.then; // 2.3.3.1
+
+            // 2.3.3.2
+            try {
+                // 2.3.3.3
+                if (typeof _then === 'function') {
+                    _then.call(_x, (_y) => { // 2.3.3.3.1
+                        // 2.3.3.3.3
+                        if (_hasBeenCalled) return;
+
+                        _hasBeenCalled = !0;
+
+                        _resolvePromise(_promise2, _y, _resolve, _reject);
+                    }, (_r) => { // 2.3.3.3.2
+                        // 2.3.3.3.3
+                        if (_hasBeenCalled) return;
+
+                        _hasBeenCalled = !0;
+
+                        return _reject(_r);
+                    });
+                }else {
+                    return _resolve(_x); // 2.3.3.4
+                }
+            }catch (_e) { // 2.3.3.3.4
+                // 2.3.3.4.1
+                if (_hasBeenCalled) return;
+
+                _hasBeenCalled = !0;
+
+                return _reject(_e); // 2.3.3.4.2
+            }
+        }else {
+            return _resolve(_x); // 2.3.4
+        }
+    };
+
     return Promise;
 })();
 
 const promise = new Promise((_resolve, _reject)=>{
     setTimeout(() => {
-        // _resolve('success');
+        _resolve('success');
         _reject('fail');
     }, 2000);
     
