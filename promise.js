@@ -181,22 +181,197 @@ const Promise = (()=>{
         }
     };
 
+    Promise.prototype.catch = function(_onRejected) {
+        return this.then(null, _onRejected);
+    };
+
+    /**
+     *  无论是 resolved 还是 rejected 都会执行
+     * 
+     *  @public
+     *  @param  {Array}  arg0    - promise 数组
+     *  @return {Object} Promise - Promise 对象
+     */
+    Promise.prototype.finally = function (_fn) {
+        
+        // 在 then 中调用 fn 时又进行了一次异步操作，所以它总是最后调用的
+        return this.then((_value) => {
+            setTimeout(_fn);
+
+            return v;
+        }, (_reason) => {
+            setTimeout(_fn);
+
+            throw _reason;
+        })
+    };
+
+    /**
+     *  当所有 promise 都 resolved 时执行 resolve，否则执行 reject
+     *  
+     *  example
+     *
+     *  ```js
+     *      const promise1 = Promise.resolve(3),
+     *            promise2 = 42,
+     *            promise3 = new Promise((_resolve, _reject) => {
+     *                setTimeout(_resolve, 100, 'foo');
+     *            });
+     *
+     *      Promise.all([promise1, promise2, promise3]).then((_values) => {
+     *          console.log(_values);
+     *      });
+     *      // [3, 42, "foo"]
+     *  ```
+     *
+     *  @public
+     *  @param  {Array}  arg0    - promise 数组
+     *  @return {Object} Promise - Promise 对象
+     */
+    Promise.all = (_iterable) => {
+        if (!Array.isArray(_iterable)) {
+            throw new TypeError("Promise.all need Array object as argument");
+        }
+
+        return new Promise((_resolve, _reject) => {
+            let _resolvedCount = 0,
+                _totalCount = _iterable.length,
+                _resolvedValues = new Array(_totalCount);
+            
+            for (let i = 0; i < _totalCount; i++) {
+                _promise = _iterable[i];
+
+                Promise.resolve(_promise).then((_value) => {
+                    _resolvedCount++;
+                    _resolvedValues[i] = _value;
+
+                    if (_resolvedCount === _totalCount) {
+                        return _resolve(_resolvedValues);
+                    }
+                }, (_reason) => {
+                    return _reject(_reason);
+                });
+            }
+        })
+    };
+
+    /**
+     *  当有一个 promise resolved 或者 rejected 就执行相应的状态
+     *  
+     *  example
+     *
+     *  ```js
+     *      const promise1 = new Promise((_resolve, _reject) {
+     *          setTimeout(_resolve, 500, 'one');
+     *      });
+     *
+     *      const promise2 = new Promise((_resolve, _reject) {
+     *          setTimeout(resolve, 100, 'two');
+     *      });
+     *
+     *      Promise.race([promise1, promise2]).then((_value) {
+     *          console.log(_value);
+     *          // Both resolve, but promise2 is faster
+     *      });
+     *      // "two"
+     *  ```
+     *
+     *  @public
+     *  @param  {Array}  arg0    - promise 数组
+     *  @return {Object} Promise - Promise 对象
+     */
+    Promise.race = (_iterable) => {
+        if (!Array.isArray(_iterable)) {
+            throw new TypeError("Promise.race need Array object as argument");
+        }
+
+        return new Promise((_resolve, _reject) => {
+            _iterable.forEach(_promise => _promise.then(_resolve, _reject));
+        });
+    };
+
+    /**
+     *  对传入的值进行 resolve
+     *  
+     *  example
+     *
+     *  ```js
+     *      const promise = Promise.resolve([1, 2, 3]);
+     *
+     *      promise.then((_value) => {
+     *          console.log(_value);
+     *      });
+     *      // [1, 2, 3]
+     *  ```
+     *
+     *  @public
+     *  @param  {Variable}  arg0    - 任意值
+     *  @return {Object}    Promise - Promise 对象
+     */
+    // Promise.resolve = (_value) => {
+    //     return new Promise((_resolve, _reject) => _resolve(_value));
+    // };
+    Promise.resolve = (_value) => {
+        let _promise;
+
+        _promise = new Promise((_resolve, _reject) => {
+            _resolvePromise(_promise, _value, _resolve, _reject);
+        });
+
+        return _promise;
+    }
+
+    /**
+     *  对传入的值进行 reject
+     *  
+     *  example
+     *
+     *  ```js
+     *      function resolved(result) {
+     *          console.log('Resolved');
+     *      }
+     *
+     *      function rejected(result) {
+     *          console.log(result);
+     *      }
+     *
+     *      Promise.reject(new Error('fail')).then(resolved, rejected);
+     *      // Error: fail
+     *  ```
+     *
+     *  @public
+     *  @param  {Variable}  arg0    - 任意值
+     *  @return {Object}    Promise - Promise 对象
+     */
+    Promise.reject = (_reason) => {
+        return new Promise((_resolve, _reject) => _reject(_reason));
+    };
+
     return Promise;
 })();
 
-const promise = new Promise((_resolve, _reject)=>{
-    setTimeout(() => {
-        _resolve('success');
-        _reject('fail');
-    }, 2000);
+// const promise = new Promise((_resolve, _reject)=>{
+//     setTimeout(() => {
+//         _resolve('success');
+//         _reject('fail');
+//     }, 2000);
     
-    // _resolve('success');
+//     // _resolve('success');
 
-    // throw 'error';
+//     // throw 'error';
+// });
+
+// promise.then((_value) => {
+//     console.log(_value);
+// }, (_e) => {
+//     console.log(_e);
+// });
+var promise1 = Promise.resolve(3);
+var promise2 = 42;
+var promise3 = new Promise(function(resolve, reject) {
+  setTimeout(resolve, 100, 'foo');
 });
 
-promise.then((_value) => {
-    console.log(_value);
-}, (_e) => {
-    console.log(_e);
+Promise.all([promise1, promise2, promise3]).then(function(values) {
+  console.log(values);
 });
