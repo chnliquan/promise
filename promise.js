@@ -286,7 +286,8 @@ const Promise = (()=>{
         }
 
         return new Promise((_resolve, _reject) => {
-            _iterable.forEach(_promise => _promise.then(_resolve, _reject));
+            _iterable.forEach(_promise => Promise.resolve(_promise)
+                .then(_value => _resolve(_value), _reason => _reject(_reason)));
         });
     };
 
@@ -308,9 +309,6 @@ const Promise = (()=>{
      *  @param  {Variable}  arg0    - 任意值
      *  @return {Object}    Promise - Promise 对象
      */
-    // Promise.resolve = (_value) => {
-    //     return new Promise((_resolve, _reject) => _resolve(_value));
-    // };
     Promise.resolve = (_value) => {
         let _promise;
 
@@ -366,12 +364,24 @@ const Promise = (()=>{
 // }, (_e) => {
 //     console.log(_e);
 // });
-var promise1 = Promise.resolve(3);
-var promise2 = 42;
-var promise3 = new Promise(function(resolve, reject) {
-  setTimeout(resolve, 100, 'foo');
+// var promise1 = Promise.resolve(3);
+// var promise2 = 42;
+// var promise3 = new Promise(function(resolve, reject) {
+//   setTimeout(resolve, 100, 'foo');
+// });
+
+// Promise.all([promise1, promise2, promise3]).then(function(values) {
+//   console.log(values);
+// });
+var promise1 = new Promise(function(resolve, reject) {
+    setTimeout(resolve, 500, 'one');
 });
 
-Promise.all([promise1, promise2, promise3]).then(function(values) {
-  console.log(values);
+var promise2 = new Promise(function(resolve, reject) {
+    setTimeout(resolve, 100, 'two');
+});
+
+Promise.race([promise1, promise2]).then(function(value) {
+  console.log(value);
+  // Both resolve, but promise2 is faster
 });
