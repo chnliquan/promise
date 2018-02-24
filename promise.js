@@ -40,8 +40,7 @@ const _resolvePromise = (_promise, _x, _resolve, _reject) => {
                     _hasBeenCalled = !0;
 
                     return _resolvePromise(_promise, _y, _resolve, _reject);
-              }, (_r) => { // 2.3.3.3.2
-                    // 2.3.3.3.3
+              }, _r => { // 2.3.3.3.2
                     if (_hasBeenCalled) return;
 
                     _hasBeenCalled = !0;
@@ -52,7 +51,6 @@ const _resolvePromise = (_promise, _x, _resolve, _reject) => {
                 return _resolve(_x); // 2.3.3.4
             }
         }catch (_e) { // 2.3.3.3.4
-            // 2.3.3.4.1
             if (_hasBeenCalled) return;
 
             _hasBeenCalled = !0;
@@ -70,32 +68,39 @@ class Promise {
         this.data = void 0; // 初始值
         this.callbacks = []; // 回调集合
 
-        const _resolve = (_value) => {
+        // 成功回调执行函数
+        const _resolve = _value => {
+            // Notes 3.1
             setTimeout(() => {
                 if (this.status !== PENDING) return; // 如果状态已经确定则跳出
 
                 this.status = FULFILLED;
                 this.data = _value;
 
+                // 触发集合中的 onFulfilled 函数
                 this.callbacks.forEach(_obj => {
                     _obj.onFulfilled(_value);
                 })
             })
         };
 
-        const _reject = (_reason) => {
+        // 失败回调执行函数
+        const _reject = _reason => {
+            // Notes 3.1
             setTimeout(() => {
                 if (this.status !== PENDING) return; // 如果状态已经确定则跳出
 
                 this.status = REJECTED;
                 this.data = _reason;
 
+                // 触发集合中的 onRejected 函数
                 this.callbacks.forEach(_obj => {
                     _obj.onRejected(_reason);
                 })
             })
         };
 
+        // 防止 executor 函数中发生异常
         try {
             _executor(_resolve, _reject);
         }catch (_e) {
@@ -106,6 +111,7 @@ class Promise {
     then(_onFulfilled, _onRejected) {
         let _promise;
 
+        // 2.2.1
         _onFulfilled = typeof _onFulfilled === 'function' ?
                       _onFulfilled : _value => _value;
         _onRejected = typeof _onRejected === 'function' ?
@@ -115,7 +121,7 @@ class Promise {
             return _promise = new Promise((_resolve, _reject) => {
                 setTimeout(() => {
                     try {
-                        let _x = _onFulfilled();
+                        let _x = _onFulfilled(); // _x 可能为一个 thenable
 
                         _resolvePromise(_promise, _x, _resolve, _reject);
                     }catch (_e) {
@@ -129,7 +135,7 @@ class Promise {
             return _promise = new Promise((_resolve, _reject) => {
                 setTimeout(() => {
                     try {
-                        let _x = _onRejected();
+                        let _x = _onRejected(); // _x 可能为一个 thenable
 
                         _resolvePromise(_promise, _x, _resolve, _reject);
                     }catch (_e) {
@@ -141,6 +147,8 @@ class Promise {
 
         if (this.status === PENDING) {
             return _promise = new Promise((_resolve, _reject) => {
+                // 如果当前状态是 pending，此时不能确定调用 onFulfilled 还是 onRejected
+                // 将处理逻辑做为回调函数放入 promise 的 callbacks中，当状态确定时触发对应的回调
                 this.callbacks.push({
                     onFulfilled (_value) {
                         try {
@@ -170,8 +178,15 @@ class Promise {
         return this.then(null, _onRejected);
     }
 
+    /**
+     *  无论是 resolved 还是 rejected 都会执行
+     * 
+     *  @public
+     *  @param  {Function}  arg0    - 处理函数
+     *  @return {Object}    Promise - Promise 对象
+     */
     finally(_fn) {
-        // 在 then 中调用 fn 时又进行了一次异步操作，所以它总是最后调用的
+        // 在 then 中调用 _fn 时又进行了一次异步操作，所以它总是最后调用的
         return this.then(_value => {
             setTimeout(_fn);
 
@@ -183,6 +198,13 @@ class Promise {
         })
     }
 
+    /**
+     *  对传入的值进行 resolve
+     *  
+     *  @public
+     *  @param  {Variable}  arg0    - 任意值
+     *  @return {Object}    Promise - Promise 对象
+     */
     static resolve(_value) {
         let _promise;
 
@@ -193,10 +215,24 @@ class Promise {
         return _promise;
     }
 
+    /**
+     *  对传入的值进行 reject
+     *  
+     *  @public
+     *  @param  {Variable}  arg0    - 任意值
+     *  @return {Object}    Promise - Promise 对象
+     */
     static reject(_reason) {
         return new Promise((_, _reject) => _reject(_reason));
     }
 
+    /**
+     *  当所有 promise 都 resolved 时执行 resolve，否则执行 reject
+     *  
+     *  @public
+     *  @param  {Array}  arg0    - promise 数组
+     *  @return {Object} Promise - Promise 对象
+     */
     static all(_iterable) {
         if (!Array.isArray(_iterable)) {
             throw new TypeError("Promise.all need Array object as argument");
@@ -220,6 +256,13 @@ class Promise {
         })
     }
 
+    /**
+     *  当有一个 promise resolved 或者 rejected 就执行相应的状态
+     *
+     *  @public
+     *  @param  {Array}  arg0    - promise 数组
+     *  @return {Object} Promise - Promise 对象
+     */
     static race(_iterable) {
         if (!Array.isArray(_iterable)) {
             throw new TypeError("Promise.race need Array object as argument");
@@ -231,3 +274,5 @@ class Promise {
         })
     }
 }
+
+module.exports = Promise;
