@@ -1,23 +1,27 @@
-const Promise = require('./promise.js');
+const Promise = require('./promise.js')
 
-const promise = new Promise((_resolve, _reject)=>{
-    // setTimeout(() => {
-    //     // _resolve('success');
-    //     _reject('fail');
-    // }, 2000);
-    
-    _resolve('success');
+const promise = new Promise((_resolve, _reject) => {
+  // setTimeout(() => {
+  //     // _resolve('success');
+  //     _reject('fail');
+  // }, 2000);
 
-    // throw 'error';
-});
+  _resolve('success')
 
-promise.then((_value) => {
-    console.log(_value);
-}, (_e) => {
-    console.log(_e);
-}).finally(() => {
-	console.log('finally');
-});
+
+  // throw 'error';
+})
+
+
+promise.then(_value => {
+    console.log(_value)
+  }, _e => {
+    console.log(_e)
+  }
+).finally(() => {
+  console.log('finally')
+})
+
 
 // var promise1 = Promise.resolve(3);
 // var promise2 = 42;
