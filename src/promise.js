@@ -5,7 +5,7 @@
  * @author   ender(chnliquan@163.com)
  * ------------------------------------------
  */
-const _ = require('./resolve')
+const _ = require('./promisesA+')
 
 class Promise {
   constructor(_executor) {
