@@ -78,7 +78,7 @@ class Promise {
             try {
               let _x = _onFulfilled() // _x 可能为一个 thenable
 
-              _resolvePromise(_promise, _x, _resolve, _reject)
+              _.resolvePromise(_promise, _x, _resolve, _reject)
             } catch (_e) {
               return _reject(_e)
             }
@@ -94,7 +94,7 @@ class Promise {
             try {
               let _x = _onRejected() // _x 可能为一个 thenable
 
-              _resolvePromise(_promise, _x, _resolve, _reject)
+              _.resolvePromise(_promise, _x, _resolve, _reject)
             } catch (_e) {
               return _reject(_e)
             }
@@ -113,7 +113,7 @@ class Promise {
             try {
               const _x = _onFulfilled(_value) // _x 可能为一个 thenable
 
-              _resolvePromise(_promise, _x, _resolve, _reject)
+              _.resolvePromise(_promise, _x, _resolve, _reject)
             } catch (_e) {
               return _reject(_e)
             }
@@ -123,7 +123,7 @@ class Promise {
             try {
               const _x = _onRejected(_reason) // _x 可能为一个 thenable
 
-              _resolvePromise(_promise, _x, _resolve, _reject)
+              _.resolvePromise(_promise, _x, _resolve, _reject)
             } catch (_e) {
               return _reject(_e)
             }
