@@ -36,7 +36,7 @@ ajax('/p/getSomething.json', function(){
 
 使用 promise 进行异步编程代码是如下的形式：
 ```js
-ajax('/p/getSomething.json).then(function(){
+ajax('/p/getSomething.json').then(function(){
   return ajax('/p/getAnother.json')
 }).then(function(){
   return ajax('/p/getLast.json')
