@@ -3,10 +3,10 @@ a simple promise implementation
 
 ## 使用方法
 
-```bash
-cd example
-node base.js
-node Promise.all.js
+```shell
+$ cd example
+$ node base.js
+$ node Promise.all.js
 ...
 ...
 ```
@@ -57,6 +57,7 @@ function getJSON(url) {
   return ajax(url).then(JSON.parse)
 }
 ```
+
 `getJSON()`函数用于获取 json 数据
 
 ```js
@@ -92,7 +93,11 @@ getChapter(0).then(chapter => {
 - **rejected**：异步过程失败
 - **pending**：异步过程待定
 
+
+
 ![](https://user-gold-cdn.xitu.io/2018/1/4/160c1030ec7dd190?imageslim)
+
+
 
 > 注：一旦从`pending`状态转换为`fulfilled`或`rejected`之后, 这个`Promise`对象的状态就不会再发生任何变化
 
