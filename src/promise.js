@@ -70,8 +70,7 @@ class Promise {
           } catch (e) {
             return reject(e)
           }
-        }
-        )
+        })
       })
     }
 
@@ -85,8 +84,7 @@ class Promise {
           } catch (e) {
             return reject(e)
           }
-        }
-        )
+        })
       })
     }
 

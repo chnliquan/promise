@@ -1,70 +1,72 @@
 const { PENDING } = require('./const')
 
 // 根据 promises/A+ 标准，执行 promise resolution procedure
-function _resolvePromise (_promise, _x, _resolve, _reject) {
-  let _hasBeenCalled = false,
-    _then
+// https://promisesaplus.com/
+function resolvePromise (promise, x, resolve, reject) {
+  let hasBeenCalled = false,
+    then
 
   // 2.3.1
-  if (_promise === _x) {
-    return _reject(new TypeError('Chaining cycle detected for promise!'))
+  if (promise === x) {
+    return reject(new TypeError('Chaining cycle detected for promise!'))
   }
 
   // 2.3.2
-  if (_x instanceof Promise) {
-    if (_x.status === PENDING) { // 2.3.2.1
-      _x.then(_value => {
-        _resolvePromise(_promise, _value, _resolve, _reject)
-      }, _reject
-      )
-    } else { // 2.3.2.2 && 2.3.2.3
-      _x.then(_resolve, _reject)
+  if (x instanceof Promise) {
+    // 2.3.2.1
+    if (x.status === PENDING) {
+      x.then(value => resolvePromise(promise, value, resolve, reject), reject)
+    } else {
+      // 2.3.2.2 && 2.3.2.3
+      x.then(resolve, reject)
     }
 
     return
   }
 
   // 2.3.3
-  if (_x !== null &&
-    (typeof _x === 'object' ||
-      typeof _x === 'function')) {
-    _then = _x.then // 2.3.3.1
+  if (x !== null && (typeof x === 'object' || typeof x === 'function')) {
+    // 2.3.3.1
+    then = x.then
 
     // 2.3.3.2
     try {
       // 2.3.3.3
-      if (typeof _then === 'function') {
-        _then.call(_x, _y => { // 2.3.3.3.1
-          // 2.3.3.3.3
-          if (_hasBeenCalled) {
+      if (typeof then === 'function') {
+        // 2.3.3.3.1
+        then.call(x, y => { // 2.3.3.3.3
+          if (hasBeenCalled) {
             return
           }
 
-          _hasBeenCalled = true
-          return _resolvePromise(_promise, _y, _resolve, _reject)
-        }, _r => { // 2.3.3.3.2
-          if (_hasBeenCalled) {
+          hasBeenCalled = true
+          return resolvePromise(promise, y, resolve, reject)
+        }, r => { // 2.3.3.3.2
+          if (hasBeenCalled) {
             return
           }
 
-          _hasBeenCalled = true
-          return _reject(_r)
+          hasBeenCalled = true
+          return reject(r)
         })
       } else {
-        return _resolve(_x) // 2.3.3.4
+        // 2.3.3.4
+        return resolve(x)
       }
-    } catch (_e) { // 2.3.3.3.4
-      if (_hasBeenCalled) {
+    } catch (e) {
+      // 2.3.3.3.4
+      if (hasBeenCalled) {
         return
       }
 
-      _hasBeenCalled = true
-      return _reject(_e) // 2.3.3.4.2
+      hasBeenCalled = true
+      // 2.3.3.4.2
+      return reject(e)
     }
   } else {
-    return _resolve(_x) // 2.3.4
+    // 2.3.4
+    return resolve(x)
   }
 }
-
 
 module.exports = resolvePromise
