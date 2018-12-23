@@ -1,14 +1,7 @@
-/*
- * ------------------------------------------
- * @file     resolve实现
- * @version  1.0
- * @author   ender(chnliquan@163.com)
- * ------------------------------------------
- */
-const PENDING = 'pending'
+const { PENDING } = require('./const')
 
 // 根据 promises/A+ 标准，执行 promise resolution procedure
-function _resolvePromise(_promise, _x, _resolve, _reject) {
+function _resolvePromise (_promise, _x, _resolve, _reject) {
   let _hasBeenCalled = false,
     _then
 
@@ -21,8 +14,8 @@ function _resolvePromise(_promise, _x, _resolve, _reject) {
   if (_x instanceof Promise) {
     if (_x.status === PENDING) { // 2.3.2.1
       _x.then(_value => {
-          _resolvePromise(_promise, _value, _resolve, _reject)
-        }, _reject
+        _resolvePromise(_promise, _value, _resolve, _reject)
+      }, _reject
       )
     } else { // 2.3.2.2 && 2.3.2.3
       _x.then(_resolve, _reject)
@@ -73,7 +66,5 @@ function _resolvePromise(_promise, _x, _resolve, _reject) {
   }
 }
 
-exports.PENDING = PENDING
-exports.FULFILLED = 'fulfilled'
-exports.REJECTED = 'rejected'
-exports.resolvePromise = _resolvePromise
+
+module.exports = resolvePromise
