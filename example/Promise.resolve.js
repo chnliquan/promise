@@ -6,16 +6,16 @@ const Promise = require('../src/promise')
 // 如果传入的 value 本身就是 promise 对象，则该对象作为 Promise.resolve 方法的返回值返回；否则以该值为成功状态返回 promise 对象
 const promise1 = Promise.resolve([1, 2, 3])
 
-promise1.then(_value => {
-  console.log(_value)
-  // expected output: Array [1, 2, 3]
+promise1.then(value => {
+  console.log(value)
+  // [1, 2, 3]
 })
 
-const promise2 = Promise.resolve(new Promise((_resolve, _reject) => {
-  setTimeout(_resolve, 2000, 'resolved')
+const promise2 = Promise.resolve(new Promise((resolve, reject) => {
+  setTimeout(resolve, 2000, 'resolved')
 }))
 
-promise2.then(_value => {
+promise2.then(value => {
   console.log('\n')
-  console.log(_value)
+  console.log(value)
 })

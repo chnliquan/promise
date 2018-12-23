@@ -107,7 +107,6 @@ class Promise {
             try {
               // x 可能为一个 thenable
               const x = onRejected(reason)
-
               resolvePromise(promise, x, resolve, reject)
             } catch (e) {
               return reject(e)
@@ -123,18 +122,18 @@ class Promise {
   }
 
   /**
-   * 无论是 resolved 还是 rejected 都会执行
+   * 无论结果是 resolved 还是 rejected 都会执行
    *
-   * @param {Function} fn
+   * @param {Function} onFinally
    * @returns {Promise}
    */
-  finally (fn) {
+  finally (onFinally) {
     // 在 then 中调用 fn 时又进行了一次异步操作，所以它总是最后调用的
     return this.then(value => {
-      setTimeout(fn)
+      setTimeout(onFinally)
       return value
     }, reason => {
-      setTimeout(fn)
+      setTimeout(onFinally)
       throw reason
     })
   }
@@ -206,10 +205,9 @@ class Promise {
     }
 
     return new Promise((resolve, reject) => {
-      iterable.forEach(
-        promise => Promise.resolve(promise)
-          .then(value => resolve(value),
-            reason => reject(reason))
+      iterable.forEach(promise =>
+        Promise.resolve(promise)
+          .then(value => resolve(value), reason => reject(reason))
       )
     })
   }
