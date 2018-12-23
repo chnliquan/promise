@@ -65,7 +65,7 @@ class Promise {
         setTimeout(() => {
           try {
             // x 可能为一个 thenable
-            const x = onFulfilled()
+            const x = onFulfilled(this.data)
             resolvePromise(promise, x, resolve, reject)
           } catch (e) {
             return reject(e)
@@ -79,7 +79,7 @@ class Promise {
         setTimeout(() => {
           try {
             // x 可能为一个 thenable
-            const x = onRejected()
+            const x = onRejected(this.data)
             resolvePromise(promise, x, resolve, reject)
           } catch (e) {
             return reject(e)
