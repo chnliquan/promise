@@ -11,9 +11,11 @@ promise1.then(value => {
   // [1, 2, 3]
 })
 
-const promise2 = Promise.resolve(new Promise((resolve, reject) => {
-  setTimeout(resolve, 2000, 'resolved')
-}))
+const promise2 = Promise.resolve(
+  new Promise((resolve, reject) => {
+    setTimeout(resolve, 2000, 'resolved')
+  })
+)
 
 promise2.then(value => {
   console.log('\n')

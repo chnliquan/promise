@@ -1,4 +1,5 @@
-const resolvePromise = require('./promisesA+')
+const { resolvePromise } = require('./promisesA+')
+const { nextTick } = require('./nextTick')
 const { PENDING, FULFILLED, REJECTED } = require('./const')
 
 class Promise {
@@ -13,7 +14,7 @@ class Promise {
     // 成功回调执行函数
     const resolve = value => {
       // Notes 3.1
-      setTimeout(() => {
+      nextTick(() => {
         // 如果状态已经确定则直接跳出
         if (this.status !== PENDING) {
           return
@@ -32,7 +33,7 @@ class Promise {
     // 失败回调执行函数
     const reject = reason => {
       // Notes 3.1
-      setTimeout(() => {
+      nextTick(() => {
         // 如果状态已经确定则直接跳出
         if (this.status !== PENDING) {
           return
@@ -69,8 +70,8 @@ class Promise {
           }
 
     if (this.status === FULFILLED) {
-      return (promise = new Promise((resolve, reject) => {
-        setTimeout(() => {
+      promise = new Promise((resolve, reject) => {
+        nextTick(() => {
           try {
             // x 可能为一个 thenable
             const x = onFulfilled(this.data)
@@ -79,12 +80,13 @@ class Promise {
             return reject(e)
           }
         })
-      }))
+      })
+      return promise
     }
 
     if (this.status === REJECTED) {
-      return (promise = new Promise((resolve, reject) => {
-        setTimeout(() => {
+      promise = new Promise((resolve, reject) => {
+        nextTick(() => {
           try {
             // x 可能为一个 thenable
             const x = onRejected(this.data)
@@ -93,11 +95,12 @@ class Promise {
             return reject(e)
           }
         })
-      }))
+      })
+      return promise
     }
 
     if (this.status === PENDING) {
-      return (promise = new Promise((resolve, reject) => {
+      promise = new Promise((resolve, reject) => {
         // 如果当前状态是 pending，此时不能确定调用 onFulfilled 还是 onRejected
         // 将处理逻辑做为回调函数放入 promise 的 callbacks 中，当状态确定时触发对应的回调
         this.callbacks.push({
@@ -121,7 +124,8 @@ class Promise {
             }
           },
         })
-      }))
+      })
+      return promise
     }
   }
 
@@ -131,19 +135,18 @@ class Promise {
 
   /**
    * 无论结果是 resolved 还是 rejected 都会执行
-   *
    * @param {Function} onFinally
    * @returns {Promise}
    */
   finally(onFinally) {
-    // 在 then 中调用 fn 时又进行了一次异步操作，所以它总是最后调用的
+    // 在 then 中调用 fn 时又进行了一次微任务，所以它总是最后调用的
     return this.then(
       value => {
-        setTimeout(onFinally)
+        nextTick(onFinally)
         return value
       },
       reason => {
-        setTimeout(onFinally)
+        nextTick(onFinally)
         throw reason
       }
     )
@@ -151,8 +154,7 @@ class Promise {
 
   /**
    * 对传入的值进行 resolve
-   *
-   * @param {Any} value
+   * @param {any} value
    * @returns {Promise}
    */
   static resolve(value) {
@@ -167,8 +169,7 @@ class Promise {
 
   /**
    * 对传入的值进行 reject
-   *
-   * @param  {Any} reason
+   * @param  {any} reason
    * @returns {Promise}
    */
   static reject(reason) {
@@ -177,7 +178,6 @@ class Promise {
 
   /**
    * 当所有 promise 都 resolved 时执行 resolve，否则执行 reject
-   *
    * @param {Array} iterable
    * @returns {Promise}
    */
@@ -209,7 +209,6 @@ class Promise {
 
   /**
    * 当有一个 promise resolved 或者 rejected 就执行相应的状态
-   *
    * @param	{Array} iterable
    * @returns {Promise}
    */

@@ -20,9 +20,11 @@ const promise6 = new Promise((resolve, reject) => {
   setTimeout(reject, 2000, 'rejected')
 })
 
-Promise.all([promise4, promise5, promise6]).then(values => {
-  console.log(values)
-}).catch(reason => {
-  console.log('\n')
-  console.log(reason)
-})
+Promise.all([promise4, promise5, promise6])
+  .then(values => {
+    console.log(values)
+  })
+  .catch(reason => {
+    console.log('\n')
+    console.log(reason)
+  })

@@ -2,7 +2,7 @@ const { PENDING } = require('./const')
 
 // 根据 promises/A+ 标准，执行 promise resolution procedure
 // https://promisesaplus.com/
-function resolvePromise (promise, x, resolve, reject) {
+function resolvePromise(promise, x, resolve, reject) {
   let hasBeenCalled = false,
     then
 
@@ -34,21 +34,27 @@ function resolvePromise (promise, x, resolve, reject) {
       // 2.3.3.3
       if (typeof then === 'function') {
         // 2.3.3.3.1
-        then.call(x, y => { // 2.3.3.3.3
-          if (hasBeenCalled) {
-            return
-          }
+        then.call(
+          x,
+          y => {
+            // 2.3.3.3.3
+            if (hasBeenCalled) {
+              return
+            }
 
-          hasBeenCalled = true
-          return resolvePromise(promise, y, resolve, reject)
-        }, r => { // 2.3.3.3.2
-          if (hasBeenCalled) {
-            return
-          }
+            hasBeenCalled = true
+            return resolvePromise(promise, y, resolve, reject)
+          },
+          r => {
+            // 2.3.3.3.2
+            if (hasBeenCalled) {
+              return
+            }
 
-          hasBeenCalled = true
-          return reject(r)
-        })
+            hasBeenCalled = true
+            return reject(r)
+          }
+        )
       } else {
         // 2.3.3.4
         return resolve(x)
@@ -69,4 +75,4 @@ function resolvePromise (promise, x, resolve, reject) {
   }
 }
 
-module.exports = resolvePromise
+exports.resolvePromise = resolvePromise
